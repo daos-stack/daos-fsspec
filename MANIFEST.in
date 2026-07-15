@@ -1,0 +1,11 @@
+include CHANGELOG.md
+include CONTRIBUTING.md
+include LICENSE
+include MANIFEST.in
+include README.md
+include SECURITY.md
+include pyproject.toml
+
+recursive-include daos_fsspec *.py *.pyi py.typed
+recursive-include docker *
+recursive-include tests *.py

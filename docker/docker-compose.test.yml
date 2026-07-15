@@ -1,0 +1,51 @@
+# Docker Compose for daos-fsspec integration testing
+#
+# Uses openSUSE Leap 15.6 with DAOS packages installed directly.
+# Server auto-formats storage and creates pool on first start.
+# Client auto-starts agent and creates container.
+#
+# Usage:
+#   sudo sysctl vm.nr_hugepages=4096
+#   docker compose -f docker/docker-compose.test.yml up -d --build
+#   docker exec -e DAOS_FSSPEC_TEST_POOL=test-pool -e DAOS_FSSPEC_TEST_CONTAINER=test-cont \
+#     daos-test-client python3 -m pytest /tmp/daos-fsspec/tests/ -v
+
+services:
+  daos-server:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.daos-server
+    container_name: daos-test-server
+    privileged: true
+    cgroup: host
+    network_mode: host
+    environment:
+      - DAOS_POOL_NAME=test-pool
+      # Percentage of available SCM, not an absolute size: a fixed 16G on a 16G
+      # ram SCM fails with DER_NOSPACE (no room for metadata). 80% adapts to host.
+      - DAOS_POOL_SIZE=80%
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - /dev/hugepages:/dev/hugepages
+      - /sys/kernel/mm/hugepages:/sys/kernel/mm/hugepages
+      - /sys/devices/system/node:/sys/devices/system/node
+      - daos-storage:/mnt/daos
+
+  daos-client:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.daos-client
+    container_name: daos-test-client
+    privileged: true
+    cgroup: host
+    network_mode: host
+    environment:
+      - DAOS_POOL_NAME=test-pool
+      - DAOS_CONTAINER_NAME=test-cont
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    depends_on:
+      - daos-server
+
+volumes:
+  daos-storage:

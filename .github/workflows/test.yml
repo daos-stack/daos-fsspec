@@ -1,0 +1,156 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    # Nightly live-integration run against DAOS on the self-hosted runner, so
+    # FFI/ABI regressions that the unit-only PR gate can't see are caught within
+    # a day rather than at the next manual dispatch. 06:17 UTC (off the hour to
+    # avoid the cron stampede). No-op if no `self-hosted,daos` runner is online.
+    - cron: "17 6 * * *"
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          pip install -e ".[test]"
+
+      - name: Run unit tests
+        run: pytest tests/ -v -m "not live" --timeout=120 --timeout-method=thread --cov=daos_fsspec --cov-report=term-missing --cov-report=xml
+
+      - name: Upload coverage
+        if: matrix.python-version == '3.12'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
+
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install ruff
+        run: pip install ruff
+
+      - name: Lint
+        run: ruff check daos_fsspec/ tests/
+
+      - name: Format check
+        run: ruff format --check daos_fsspec/ tests/
+
+  typecheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install mypy fsspec
+          pip install --no-deps -e .
+
+      - name: Type check
+        run: mypy daos_fsspec/ --ignore-missing-imports
+
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build tools
+        run: pip install build
+
+      - name: Build sdist and wheel
+        run: python -m build
+
+      - name: Verify wheel contents
+        run: |
+          pip install dist/*.whl
+          python -c "import daos_fsspec; print(daos_fsspec.__version__)"
+          python -c "from daos_fsspec import DFSFileSystem; print('OK')"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  # Live integration tests against a real DAOS cluster in Docker.
+  #
+  # GitHub-hosted runners cannot run DAOS (no hugepages / privileged containers),
+  # so this job runs ONLY on a self-hosted runner labelled `self-hosted, daos`,
+  # and only on a nightly `schedule` or a manual `workflow_dispatch`. Gating on
+  # the event — rather than just the runner label — keeps the job from sitting
+  # permanently queued on every push when no DAOS runner is online. The nightly
+  # run is the automatic gate that catches FFI/ABI regressions the unit-only PR
+  # jobs can't; dispatch is for on-demand verification (e.g. before a release).
+  #
+  # To provide a runner, register the Proxmox live-test VM (see
+  # docker/LIVE_TEST_RESULTS.md for the exact provisioning recipe) as a
+  # self-hosted runner with labels `self-hosted,daos`. The runner host needs
+  # Docker + Compose and `sudo sysctl vm.nr_hugepages=4096`.
+  live-tests:
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    runs-on: [self-hosted, daos]
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run live tests in Docker
+        run: |
+          chmod +x docker/test.sh
+          docker/test.sh --live 2>&1 | tee live-test.log
+
+      - name: Publish result to job summary
+        if: always()
+        run: |
+          {
+            echo '### DAOS live integration tests'
+            echo '```'
+            grep -E 'passed|failed|error' live-test.log | tail -5 || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload live test log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-test-log
+          path: live-test.log

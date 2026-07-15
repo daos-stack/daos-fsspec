@@ -1,0 +1,10 @@
+# Exclude only local/generated files from GitHub source archives.
+# PyPI sdists are controlled by setuptools, not by export-ignore.
+.hypothesis/        export-ignore
+.mypy_cache/        export-ignore
+.pytest_cache/      export-ignore
+.ruff_cache/        export-ignore
+
+# Linguist overrides for GitHub language detection
+*.pyi               linguist-detectable=true
+tests/              linguist-detectable=false
