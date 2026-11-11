@@ -1,0 +1,167 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          pip install -e ".[test]"
+
+      - name: Run unit tests
+        run: pytest tests/ -v -m "not live" --timeout=120 --timeout-method=thread --cov=daos_fsspec --cov-report=term-missing --cov-report=xml
+
+      - name: Upload coverage
+        if: matrix.python-version == '3.12'
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-report
+          path: coverage.xml
+
+  lint:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install ruff
+        run: pip install ruff
+
+      - name: Lint
+        run: ruff check daos_fsspec/ tests/
+
+      - name: Format check
+        run: ruff format --check daos_fsspec/ tests/
+
+  typecheck:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install "mypy>=1.0,<1.19" fsspec
+          pip install --no-deps -e .
+
+      - name: Type check
+        run: mypy daos_fsspec/ --ignore-missing-imports
+
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install build tools
+        run: pip install build
+
+      - name: Build sdist and wheel
+        run: python -m build
+
+      - name: Verify wheel contents
+        run: |
+          pip install dist/*.whl
+          python -c "import daos_fsspec; print(daos_fsspec.__version__)"
+          python -c "from daos_fsspec import DFSFileSystem; print('OK')"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+
+  live-tests:
+    name: live-tests (DAOS ${{ matrix.daos_version }})
+    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        daos_version: ["2.6.5", "2.8.0"]
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Disable transparent hugepages
+        run: |
+          echo "THP before: $(cat /sys/kernel/mm/transparent_hugepage/enabled)"
+          echo never | sudo tee /sys/kernel/mm/transparent_hugepage/enabled
+          echo "THP after:  $(cat /sys/kernel/mm/transparent_hugepage/enabled)"
+
+      - name: Prepare memory for RAM-backed SCM
+        run: |
+          sudo sysctl vm.nr_hugepages=0
+          free -h
+
+      - name: Run live tests against DAOS ${{ matrix.daos_version }}
+        env:
+          DAOS_VERSION: ${{ matrix.daos_version }}
+        shell: bash -euo pipefail {0}
+        run: |
+          chmod +x docker/test.sh
+          docker/test.sh --live --skip-unit 2>&1 | tee live-test.log
+
+      - name: Dump cluster state on failure
+        if: failure()
+        run: |
+          docker ps -a || true
+          docker logs daos-test-server 2>&1 | tail -100 || true
+          docker logs daos-test-client 2>&1 | tail -50 || true
+          docker exec daos-test-server cat /tmp/daos_engine.log 2>&1 | tail -50 || true
+
+      - name: Publish result to job summary
+        if: always()
+        run: |
+          {
+            echo "### DAOS ${{ matrix.daos_version }} live integration tests"
+            echo '```'
+            grep -E 'passed|failed|error' live-test.log | tail -5 || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload live test log
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: live-test-log-${{ matrix.daos_version }}
+          path: live-test.log

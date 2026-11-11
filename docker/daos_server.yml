@@ -1,0 +1,27 @@
+name: test
+access_points: ["localhost"]
+port: 10001
+
+provider: ofi+tcp
+control_log_mask: DEBUG
+
+system_ram_reserved: 1
+
+engines:
+  - targets: 1
+    nr_xs_helpers: 0
+    env_vars:
+      - DAOS_TARGET_OVERSUBSCRIBE=1
+    fabric_iface: eth0
+    fabric_iface_port: 31416
+    first_core: 0
+    log_file: /tmp/daos_engine.log
+    storage:
+      - class: ram
+        scm_mount: /mnt/daos
+        scm_size: 4
+
+transport_config:
+  allow_insecure: true
+
+helper_log_file: /tmp/daos_server_helper.log

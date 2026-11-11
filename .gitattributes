@@ -1,0 +1,2 @@
+*.pyi linguist-detectable=true
+tests/ linguist-detectable=false

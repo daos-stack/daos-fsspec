@@ -1,0 +1,6 @@
+include CHANGELOG.md CONTRIBUTING.md LICENSE README.md SECURITY.md pyproject.toml MANIFEST.in
+recursive-include daos_fsspec *.py *.pyi py.typed
+recursive-include tests *.py *.c *.json
+recursive-include examples *.py *.md *.sh
+recursive-include docs *.md
+recursive-include docker Dockerfile.* *.py *.sh *.yml *.md

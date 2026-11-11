@@ -1,0 +1,99 @@
+[build-system]
+# Setuptools 77+ supports the SPDX license metadata below.
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "daos-fsspec"
+version = "1.4.1"
+description = "fsspec filesystem interface for DAOS DFS (Distributed File System)"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.9"
+authors = [
+    {name = "Enakta Labs Ltd", email = "oss@enaktalabs.com"},
+]
+keywords = ["daos", "fsspec", "hpc", "distributed-filesystem", "dfs"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Typing :: Typed",
+    "Topic :: System :: Filesystems",
+    "Topic :: Scientific/Engineering",
+]
+dependencies = [
+    "fsspec>=2023.1.0",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=7.0",
+    "pytest-asyncio>=0.21",
+    "pytest-cov>=4.0",
+    "pytest-timeout>=2.3",
+    "hypothesis>=6.0",
+]
+parquet = [
+    "pandas>=1.5",
+    "pyarrow>=10.0",
+]
+dev = [
+    "pytest>=7.0",
+    "pytest-asyncio>=0.21",
+    "pytest-cov>=4.0",
+    "pytest-timeout>=2.3",
+    "hypothesis>=6.0",
+    "pandas>=1.5",
+    "pyarrow>=10.0",
+    "ruff>=0.4",
+    "mypy>=1.0,<1.19",  # Later versions drop the Python 3.9 target.
+]
+
+[project.urls]
+Homepage = "https://github.com/daos-stack/daos-fsspec"
+Documentation = "https://github.com/daos-stack/daos-fsspec#readme"
+Repository = "https://github.com/daos-stack/daos-fsspec"
+Changelog = "https://github.com/daos-stack/daos-fsspec/blob/main/CHANGELOG.md"
+Issues = "https://github.com/daos-stack/daos-fsspec/issues"
+
+[project.entry-points."fsspec.specs"]
+dfs = "daos_fsspec:DFSFileSystem"
+
+[tool.setuptools.packages.find]
+include = ["daos_fsspec*"]
+
+[tool.setuptools.package-data]
+daos_fsspec = ["py.typed", "*.pyi"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "live: tests requiring a running DAOS cluster",
+]
+asyncio_mode = "auto"
+# Collect Benchmark* classes too: they hold test_bench_* methods that would
+# otherwise never run (default python_classes is Test* only). They are
+# @pytest.mark.live, so they still only execute against a real DAOS cluster.
+python_classes = ["Test*", "Benchmark*"]
+
+[tool.ruff]
+target-version = "py39"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.9"
+ignore_missing_imports = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false

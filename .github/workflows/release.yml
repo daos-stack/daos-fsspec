@@ -1,0 +1,54 @@
+name: Release
+on:
+  workflow_dispatch:
+    inputs:
+      testpypi_run_id:
+        description: Successful TestPyPI run whose artifacts will be published
+        required: true
+      confirmation:
+        description: Type publish-1.4.1 to publish to production PyPI
+        required: true
+permissions:
+  contents: read
+  actions: read
+jobs:
+  verify:
+    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'publish-1.4.1'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Verify tested source
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ inputs.testpypi_run_id }}
+          REPOSITORY: ${{ github.repository }}
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          [[ "$RUN_ID" =~ ^[0-9]+$ ]]
+          gh api "repos/$REPOSITORY/actions/runs/$RUN_ID" > run.json
+          python - <<'PYTHON'
+          import json, os
+          run = json.load(open('run.json'))
+          assert run['conclusion'] == 'success'
+          assert run['head_sha'] == os.environ['EXPECTED_SHA']
+          assert run['path'] == '.github/workflows/testpypi.yml'
+          assert run['event'] == 'workflow_dispatch'
+          PYTHON
+  publish:
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: pypi
+    permissions:
+      actions: read
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: release-dist
+          path: dist
+          run-id: ${{ inputs.testpypi_run_id }}
+          github-token: ${{ github.token }}
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          attestations: false

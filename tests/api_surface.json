@@ -1,0 +1,272 @@
+{
+  "daos_fsspec": {
+    "__all__": [
+      "DFSFile",
+      "DFSFileSystem",
+      "DFSFileSystemPool",
+      "DFSFileSystemWithMetrics",
+      "DFSMetrics",
+      "MountAttr",
+      "ObjInfo",
+      "OperationMetrics",
+      "PoolSpace",
+      "cache_info",
+      "clear_fs_cache",
+      "get_fs"
+    ]
+  },
+  "daos_fsspec._bindings": {
+    "classes": {
+      "ContainerInfo": {},
+      "DaosError": {
+        "is_retryable": "<property>"
+      },
+      "DirEntry": {},
+      "MountAttr": {},
+      "ObjInfo": {},
+      "PoolSpace": {},
+      "StatResult": {
+        "is_dir": "<property>",
+        "is_file": "<property>",
+        "is_link": "<property>",
+        "type_name": "<property>"
+      },
+      "d_iov_t": {},
+      "d_sg_list_t": {},
+      "daos_anchor_t": {},
+      "daos_handle_t": {},
+      "daos_pool_cont_info": {},
+      "dfs_attr_t": {},
+      "dfs_obj_info_t": {},
+      "dirent": {},
+      "struct_stat": {},
+      "uuid_t": {}
+    },
+    "functions": {
+      "cont_close": "(coh: 'daos_handle_t') -> 'None'",
+      "cont_create": "(poh: 'daos_handle_t', label: 'str') -> 'str'",
+      "cont_destroy": "(poh: 'daos_handle_t', label: 'str', force: 'bool' = False) -> 'None'",
+      "cont_open": "(poh: 'daos_handle_t', cont_label: 'str', flags: 'int' = 2) -> 'daos_handle_t'",
+      "daos_fini": "() -> 'None'",
+      "daos_init": "() -> 'None'",
+      "dfs_access": "(dfs: 'dfs_p', parent: 'dfs_obj_p', name: 'str', mask: 'int') -> 'bool'",
+      "dfs_chmod": "(dfs: 'dfs_p', parent: 'dfs_obj_p', name: 'str', mode: 'int') -> 'None'",
+      "dfs_chown": "(dfs: 'dfs_p', parent: 'dfs_obj_p', name: 'str', uid: 'int', gid: 'int', flags: 'int' = 0) -> 'None'",
+      "dfs_close": "(obj: 'dfs_obj_p') -> 'None'",
+      "dfs_create_symlink": "(dfs: 'dfs_p', parent: 'dfs_obj_p', name: 'str', target: 'str') -> 'dfs_obj_p'",
+      "dfs_dup": "(dfs: 'dfs_p', obj: 'dfs_obj_p', flags: 'int' = 0) -> 'dfs_obj_p'",
+      "dfs_exchange": "(dfs: 'dfs_p', parent1: 'dfs_obj_p', name1: 'str', parent2: 'dfs_obj_p', name2: 'str') -> 'None'",
+      "dfs_get_chunk_size": "(dfs: 'dfs_p', obj: 'dfs_obj_p') -> 'int'",
+      "dfs_get_size": "(dfs: 'dfs_p', obj: 'dfs_obj_p') -> 'int'",
+      "dfs_getxattr": "(dfs: 'dfs_p', obj: 'dfs_obj_p', name: 'str') -> 'bytes'",
+      "dfs_listxattr": "(dfs: 'dfs_p', obj: 'dfs_obj_p') -> 'list[str]'",
+      "dfs_lookup_path": "(dfs: 'dfs_p', path: 'str', flags: 'int' = 2) -> 'tuple[dfs_obj_p, StatResult]'",
+      "dfs_lookup_rel_path": "(dfs: 'dfs_p', parent: 'dfs_obj_p', name: 'str', flags: 'int' = 2) -> 'tuple[dfs_obj_p, StatResult]'",
+      "dfs_mkdir": "(dfs: 'dfs_p', parent: 'dfs_obj_p', name: 'str', mode: 'int' = 493, oclass_id: 'int' = 0) -> 'None'",
+      "dfs_mount_fs": "(poh: 'daos_handle_t', coh: 'daos_handle_t', readonly: 'bool' = False) -> 'dfs_p'",
+      "dfs_move": "(dfs: 'dfs_p', src_parent: 'dfs_obj_p', src_name: 'str', dst_parent: 'dfs_obj_p', dst_name: 'str') -> 'None'",
+      "dfs_obj_anchor_split": "(obj: 'dfs_obj_p', nr_splits: 'int') -> 'list[daos_anchor_t]'",
+      "dfs_obj_anchor_split_optimal": "(obj: 'dfs_obj_p') -> 'int'",
+      "dfs_obj_get_info": "(dfs: 'dfs_p', obj: 'dfs_obj_p') -> 'ObjInfo'",
+      "dfs_open_file": "(dfs: 'dfs_p', parent: 'dfs_obj_p', name: 'str', mode: 'int', flags: 'int', oclass_id: 'int' = 0, chunk_size: 'int' = 0) -> 'dfs_obj_p'",
+      "dfs_pool_get": "(dfs: 'dfs_p') -> 'daos_handle_t'",
+      "dfs_pool_put": "(dfs: 'dfs_p', poh: 'daos_handle_t') -> 'None'",
+      "dfs_punch": "(dfs: 'dfs_p', obj: 'dfs_obj_p', offset: 'int', length: 'int') -> 'None'",
+      "dfs_query_attr": "(dfs: 'dfs_p') -> 'MountAttr'",
+      "dfs_read": "(dfs: 'dfs_p', obj: 'dfs_obj_p', offset: 'int', size: 'int') -> 'bytes'",
+      "dfs_read_symlink": "(obj: 'dfs_obj_p') -> 'str'",
+      "dfs_readdir": "(dfs: 'dfs_p', obj: 'dfs_obj_p') -> 'list[str]'",
+      "dfs_readdirplus": "(dfs: 'dfs_p', obj: 'dfs_obj_p') -> 'list[DirEntry]'",
+      "dfs_readdirplus_at": "(dfs: 'dfs_p', obj: 'dfs_obj_p', anchor: 'daos_anchor_t', batch_size: 'int' = 128) -> 'list[DirEntry]'",
+      "dfs_release": "(obj: 'dfs_obj_p') -> 'None'",
+      "dfs_remove": "(dfs: 'dfs_p', parent: 'dfs_obj_p', name: 'str', force: 'bool' = False) -> 'None'",
+      "dfs_removexattr": "(dfs: 'dfs_p', obj: 'dfs_obj_p', name: 'str') -> 'None'",
+      "dfs_set_prefix": "(dfs: 'dfs_p', prefix: 'str') -> 'None'",
+      "dfs_setattr": "(dfs: 'dfs_p', obj: 'dfs_obj_p', mtime: 'float | None' = None, atime: 'float | None' = None, file_size: 'int | None' = None) -> 'None'",
+      "dfs_setxattr": "(dfs: 'dfs_p', obj: 'dfs_obj_p', name: 'str', value: 'bytes', flags: 'int' = 0) -> 'None'",
+      "dfs_stat": "(dfs: 'dfs_p', obj: 'dfs_obj_p') -> 'StatResult'",
+      "dfs_stat_rel": "(dfs: 'dfs_p', parent: 'dfs_obj_p', name: 'str') -> 'StatResult | None'",
+      "dfs_suggest_oclass": "(dfs: 'dfs_p', hint: 'str') -> 'int'",
+      "dfs_umount": "(dfs: 'dfs_p') -> 'None'",
+      "dfs_write": "(dfs: 'dfs_p', obj: 'dfs_obj_p', offset: 'int', data: 'bytes') -> 'int'",
+      "pool_connect": "(pool_label: 'str', flags: 'int' = 2) -> 'daos_handle_t'",
+      "pool_disconnect": "(poh: 'daos_handle_t') -> 'None'",
+      "pool_list_cont": "(poh: 'daos_handle_t') -> 'list[ContainerInfo]'",
+      "pool_query_space": "(poh: 'daos_handle_t') -> 'PoolSpace'",
+      "same_handle": "(a: 'Any', b: 'Any') -> 'bool'"
+    }
+  },
+  "daos_fsspec._fork": {
+    "functions": {
+      "fork_error": "(created_pid: 'int') -> 'RuntimeError'",
+      "generation": "() -> 'int'",
+      "register": "(obj: 'Any') -> 'None'"
+    }
+  },
+  "daos_fsspec._fs_cache": {
+    "__all__": [
+      "cache_info",
+      "clear_fs_cache",
+      "get_fs"
+    ],
+    "functions": {
+      "cache_info": "() -> 'dict[str, Any]'",
+      "clear_fs_cache": "(*, close: 'bool' = False) -> 'int'",
+      "get_fs": "(pool: 'str', container: 'str', **kwargs: 'Any') -> 'DFSFileSystem'"
+    }
+  },
+  "daos_fsspec._rwlock": {
+    "classes": {
+      "RWLock": {
+        "acquire_read": "(self, blocking: 'bool' = True, timeout: 'float | None' = None) -> 'bool'",
+        "acquire_write": "(self, timeout: 'float | None' = None) -> 'bool'",
+        "read": "(self) -> 'Iterator[None]'",
+        "readers": "<property>",
+        "release_read": "(self) -> 'None'",
+        "release_write": "(self) -> 'None'",
+        "write": "(self) -> 'Iterator[None]'"
+      }
+    }
+  },
+  "daos_fsspec.async_core": {
+    "classes": {
+      "DFSAsyncFileSystem": {
+        "close": "(self) -> 'None'",
+        "health_check": "(self) -> 'dict[str, bool]'",
+        "mount_attr": "(self)",
+        "pool_space": "(self)"
+      }
+    }
+  },
+  "daos_fsspec.core": {
+    "classes": {
+      "DFSFileSystem": {
+        "access": "(self, path: 'str', mode: 'int' = 0) -> 'bool'",
+        "cat_file": "(self, path: 'str', start: 'int | None' = None, end: 'int | None' = None, **kwargs: 'Any') -> 'bytes'",
+        "cat_ranges": "(self, paths: 'list[str]', starts: 'list[int] | int', ends: 'list[int] | int', max_gap: 'int | None' = None, on_error: 'str' = 'return', **kwargs: 'Any') -> 'list'",
+        "checksum": "(self, path: 'str') -> 'str'",
+        "chmod": "(self, path: 'str', mode: 'int') -> 'None'",
+        "chown": "(self, path: 'str', uid: 'int', gid: 'int', follow_links: 'bool' = True) -> 'None'",
+        "close": "(self) -> 'None'",
+        "created": "(self, path: 'str') -> 'float'",
+        "du": "(self, path: 'str', total: 'bool' = False, maxdepth: 'int | None' = None, **kwargs)",
+        "exists": "(self, path: 'str', **kwargs: 'Any') -> 'bool'",
+        "find": "(self, path: 'str', maxdepth: 'int | None' = None, withdirs: 'bool' = False, detail: 'bool' = False, **kwargs: 'Any') -> 'Any'",
+        "find_parallel": "(self, path: 'str', maxdepth: 'int | None' = None, withdirs: 'bool' = False, detail: 'bool' = False, num_workers: 'int' = 4, **kwargs: 'Any') -> 'list[str] | dict[str, Any]'",
+        "get_file": "(self, rpath: 'str', lpath: 'str', **kwargs)",
+        "getxattr": "(self, path: 'str', attr_name: 'str') -> 'bytes'",
+        "head": "(self, path: 'str', size: 'int' = 1024) -> 'bytes'",
+        "health_check": "(self) -> 'bool'",
+        "info": "(self, path: 'str', **kwargs: 'Any') -> 'dict'",
+        "invalidate_cache": "(self, path: 'str | None' = None) -> 'None'",
+        "is_alive": "<property>",
+        "islink": "(self, path: 'str') -> 'bool'",
+        "lexists": "(self, path: 'str', **kwargs: 'Any') -> 'bool'",
+        "listxattr": "(self, path: 'str') -> 'list[str]'",
+        "ls": "(self, path: 'str', detail: 'bool' = False, **kwargs: 'Any') -> 'list'",
+        "makedirs": "(self, path: 'str', exist_ok: 'bool' = False) -> 'None'",
+        "mkdir": "(self, path: 'str', create_parents: 'bool' = True, **kwargs: 'Any') -> 'None'",
+        "modified": "(self, path: 'str') -> 'float'",
+        "mount_attr": "(self) -> 'B.MountAttr'",
+        "mv": "(self, path1: 'str', path2: 'str', **kwargs: 'Any') -> 'None'",
+        "obj_info": "(self, path: 'str') -> 'B.ObjInfo'",
+        "pipe_file": "(self, path: 'str', value: 'bytes', **kwargs: 'Any') -> 'None'",
+        "pool_space": "(self) -> 'B.PoolSpace'",
+        "put_file": "(self, lpath: 'str', rpath: 'str', **kwargs)",
+        "readlink": "(self, path: 'str') -> 'str'",
+        "removexattr": "(self, path: 'str', attr_name: 'str') -> 'None'",
+        "rm": "(self, path: 'str', recursive: 'bool' = False, maxdepth: 'int | None' = None) -> 'None'",
+        "rmdir": "(self, path: 'str') -> 'None'",
+        "set_prefix": "(self, prefix: 'str') -> 'None'",
+        "setxattr": "(self, path: 'str', attr_name: 'str', value: 'bytes', flags: 'int' = 0) -> 'None'",
+        "status": "(self) -> 'dict[str, Any]'",
+        "suggest_oclass": "(self, hint: 'str') -> 'int'",
+        "symlink": "(self, path: 'str', target: 'str', **kwargs: 'Any') -> 'None'",
+        "tail": "(self, path: 'str', size: 'int' = 1024) -> 'bytes'",
+        "touch": "(self, path: 'str', truncate: 'bool' = True, **kwargs: 'Any') -> 'None'",
+        "truncate": "(self, path: 'str', size: 'int' = 0) -> 'None'",
+        "walk": "(self, top: 'str', maxdepth: 'int | None' = None, topdown: 'bool' = True, **kwargs: 'Any')"
+      },
+      "MountChangedError": {}
+    }
+  },
+  "daos_fsspec.dfs_file": {
+    "classes": {
+      "DFSFile": {
+        "close": "(self) -> 'None'"
+      }
+    }
+  },
+  "daos_fsspec.metrics": {
+    "classes": {
+      "DFSFileSystemWithMetrics": {
+        "access": "(self, path: 'str', mode: 'int' = 0) -> 'bool'",
+        "cat_file": "(self, path: 'str', start: 'int | None' = None, end: 'int | None' = None, **kwargs: 'Any') -> 'bytes'",
+        "cat_ranges": "(self, paths: 'list[str]', starts: 'list[int] | int', ends: 'list[int] | int', max_gap: 'int | None' = None, on_error: 'str' = 'return', **kwargs: 'Any') -> 'list'",
+        "checksum": "(self, path: 'str') -> 'str'",
+        "chmod": "(self, path: 'str', mode: 'int') -> 'None'",
+        "chown": "(self, path: 'str', uid: 'int', gid: 'int', follow_links: 'bool' = True) -> 'None'",
+        "close": "(self) -> 'None'",
+        "created": "(self, path: 'str') -> 'float'",
+        "du": "(self, path: 'str', total: 'bool' = False, maxdepth: 'int | None' = None, **kwargs)",
+        "exists": "(self, path: 'str', **kwargs: 'Any') -> 'bool'",
+        "find": "(self, path: 'str', maxdepth: 'int | None' = None, withdirs: 'bool' = False, detail: 'bool' = False, **kwargs: 'Any') -> 'Any'",
+        "find_parallel": "(self, path: 'str', maxdepth: 'int | None' = None, withdirs: 'bool' = False, detail: 'bool' = False, num_workers: 'int' = 4, **kwargs: 'Any') -> 'list[str] | dict[str, Any]'",
+        "get_file": "(self, rpath: 'str', lpath: 'str', **kwargs)",
+        "getxattr": "(self, path: 'str', attr_name: 'str') -> 'bytes'",
+        "head": "(self, path: 'str', size: 'int' = 1024) -> 'bytes'",
+        "health_check": "(self) -> 'bool'",
+        "info": "(self, path: 'str', **kwargs: 'Any') -> 'dict'",
+        "invalidate_cache": "(self, path: 'str | None' = None) -> 'None'",
+        "is_alive": "<property>",
+        "islink": "(self, path: 'str') -> 'bool'",
+        "lexists": "(self, path: 'str', **kwargs: 'Any') -> 'bool'",
+        "listxattr": "(self, path: 'str') -> 'list[str]'",
+        "ls": "(self, path: 'str', detail: 'bool' = False, **kwargs: 'Any') -> 'list'",
+        "makedirs": "(self, path: 'str', exist_ok: 'bool' = False) -> 'None'",
+        "mkdir": "(self, path: 'str', create_parents: 'bool' = True, **kwargs: 'Any') -> 'None'",
+        "modified": "(self, path: 'str') -> 'float'",
+        "mount_attr": "(self) -> 'B.MountAttr'",
+        "mv": "(self, path1: 'str', path2: 'str', **kwargs: 'Any') -> 'None'",
+        "obj_info": "(self, path: 'str') -> 'B.ObjInfo'",
+        "pipe_file": "(self, path: 'str', value: 'bytes', **kwargs: 'Any') -> 'None'",
+        "pool_space": "(self) -> 'B.PoolSpace'",
+        "put_file": "(self, lpath: 'str', rpath: 'str', **kwargs)",
+        "readlink": "(self, path: 'str') -> 'str'",
+        "removexattr": "(self, path: 'str', attr_name: 'str') -> 'None'",
+        "rm": "(self, path: 'str', recursive: 'bool' = False, maxdepth: 'int | None' = None) -> 'None'",
+        "rmdir": "(self, path: 'str') -> 'None'",
+        "set_prefix": "(self, prefix: 'str') -> 'None'",
+        "setxattr": "(self, path: 'str', attr_name: 'str', value: 'bytes', flags: 'int' = 0) -> 'None'",
+        "status": "(self) -> 'dict[str, Any]'",
+        "suggest_oclass": "(self, hint: 'str') -> 'int'",
+        "symlink": "(self, path: 'str', target: 'str', **kwargs: 'Any') -> 'None'",
+        "tail": "(self, path: 'str', size: 'int' = 1024) -> 'bytes'",
+        "touch": "(self, path: 'str', truncate: 'bool' = True, **kwargs: 'Any') -> 'None'",
+        "truncate": "(self, path: 'str', size: 'int' = 0) -> 'None'",
+        "walk": "(self, top: 'str', maxdepth: 'int | None' = None, topdown: 'bool' = True, **kwargs: 'Any')"
+      },
+      "DFSMetrics": {
+        "reset": "(self)",
+        "summary": "(self) -> 'dict[str, Any]'"
+      },
+      "OperationMetrics": {
+        "avg_duration": "<property>",
+        "error_rate": "<property>",
+        "record": "(self, duration: 'float', error: 'bool' = False, bytes_count: 'int' = 0, is_read: 'bool' = True)"
+      }
+    }
+  },
+  "daos_fsspec.pool": {
+    "classes": {
+      "DFSFileSystemPool": {
+        "acquire": "(self, timeout: 'float | None' = None) -> 'DFSFileSystem'",
+        "close": "(self, force: 'bool' = False) -> 'None'",
+        "connection": "(self, timeout: 'float | None' = None) -> 'Generator[DFSFileSystem, None, None]'",
+        "health_check": "(self) -> 'dict[str, bool]'",
+        "release": "(self, fs: 'DFSFileSystem') -> 'None'",
+        "status": "(self) -> 'dict[str, Any]'"
+      }
+    }
+  }
+}

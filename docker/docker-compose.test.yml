@@ -1,0 +1,46 @@
+
+services:
+  daos-server:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.daos-server
+      args:
+        DAOS_VERSION: ${DAOS_VERSION:-2.6.5}
+    image: daos-fsspec-server:${DAOS_VERSION:-2.6.5}
+    container_name: daos-test-server
+    privileged: true
+    cgroup: host
+    network_mode: host
+    environment:
+      - DAOS_POOL_NAME=test-pool
+      - DAOS_POOL_SIZE=2G
+      - DAOS_FABRIC_IFACE=${DAOS_FABRIC_IFACE:-}
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - /dev/hugepages:/dev/hugepages
+      - /sys/kernel/mm/hugepages:/sys/kernel/mm/hugepages
+      - /sys/devices/system/node:/sys/devices/system/node
+      - daos-storage:/mnt/daos
+
+  daos-client:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.daos-client
+      args:
+        DAOS_VERSION: ${DAOS_VERSION:-2.6.5}
+    image: daos-fsspec-client:${DAOS_VERSION:-2.6.5}
+    container_name: daos-test-client
+    privileged: true
+    cgroup: host
+    network_mode: host
+    environment:
+      - DAOS_POOL_NAME=test-pool
+      - DAOS_CONTAINER_NAME=test-cont
+      - DAOS_VERSION=${DAOS_VERSION:-2.6.5}
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    depends_on:
+      - daos-server
+
+volumes:
+  daos-storage:
