@@ -53,7 +53,7 @@ dev = [
     "pandas>=1.5",
     "pyarrow>=10.0",
     "ruff>=0.4",
-    "mypy>=1.0,<1.19",  # Later versions drop the Python 3.9 target.
+    "mypy>=1.0,<2.5",  # Later versions drop the Python 3.9 target.
 ]
 
 [project.urls]
